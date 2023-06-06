@@ -1,4 +1,4 @@
-# module transition_matrix_creator
+module transition_matrix_creator
     using 
         CSV,
         DataFrames,
@@ -6,7 +6,7 @@
         Statistics;
 
     cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
-    const GAMBLE_SOURCE_PATH = "data/Gambles_Fiedler_Glöckner_2012.csv";
+    const GAMBLE_SOURCE_PATH = "data/Gambles_Fiedler_Glöckner_2012_standardized.csv";
     const GAMBLES = CSV.read(GAMBLE_SOURCE_PATH, DataFrame);
     const TARGETS = ["1.0", "2.0", "3.0", "4.0", "5.0", "6.0", "7.0", "8.0"];     # Do not change the order!
     const B_OPTN = hcat(repeat([1 1 0 0 1 1 0 0], 8));
@@ -65,27 +65,31 @@
     """ Calculates the probabilities to transition to any state given the current state.
     This implementation does not consider a novelty parameter.
     # Arguments
-    - currentTarget: Index of the current target as specified in TARGETS
+    - currentTarget: Vurrent target as specified in TARGETS
     - gamble: Number of the gamble for which to calculate transition probabilities, referring to gambles.trigger
     - betas: beta1-10 as specified by He and Bhatia (2023)
     # Returns
     - A vector containing the transitioning probabilities with the array indices referring to the target indices
     """
-    global function get_transition_probabilities(currentTarget::Number, gamble::Number, betas::Array{Number})
+    function get_transition_probabilities(currentTarget::String, gamble::Number, betas::Array{Number})
+        z = GAMBLES[gamble, currentTarget*"_z"];
+        i = findall(x -> x === currentTarget, TARGETS);
 
         return softmax(
-            betas[1].*B_OPTN[currentTarget,:] +
-            betas[2].*B_ATTR[currentTarget,:] +
-            betas[3].*B_BRAN[currentTarget,:] +
-            betas[4].*I_OPTN[currentTarget,:] +
-            betas[5].*I_ATTR[currentTarget,:] +
-            betas[6].*I_STAT[currentTarget,:] +
-            betas[7].*I_P_BRAN[currentTarget,:] +
-            betas[8].*I_X_BRAN[currentTarget,:] +
-            betas[9].*I_P_BRAN[currentTarget,:]*z +
-            betas[10].*I_X_BRAN[currentTarget,:]*z
+            betas[1]*B_OPTN[i,:] +
+            betas[2]*B_ATTR[i,:] +
+            betas[3]*B_BRAN[i,:] +
+            betas[4]*I_OPTN[i,:] +
+            betas[5]*I_ATTR[i,:] +
+            betas[6]*I_STAT[i,:] +
+            betas[7]*I_P_BRAN[i,:] +
+            betas[8]*I_X_BRAN[i,:] +
+            betas[9]*I_P_BRAN[i,:]*z +
+            betas[10]*I_X_BRAN[i,:]*z
         );
     end
 
-    standardize_gamble_values!(GAMBLES);
-# end
+    global function get_transition_matrix(gamble::Number, betas::Array{Number})
+        return [get_transition_probabilities(TARGETS[i], gamble, betas) for i in 1:8];
+    end
+end
