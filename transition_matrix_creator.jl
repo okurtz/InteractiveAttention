@@ -7,10 +7,11 @@ module transition_matrix_creator
         CSV,
         DataFrames,
         LinearAlgebra,
+        NamedArrays,
         Statistics;
 
     cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
-    const GAMBLE_SOURCE_PATH = "data/Study 1/Gambles_Fiedler_Glöckner_2012_Study_1.csv";
+    const GAMBLE_SOURCE_PATH = "data/Study 1/Gambles_Fiedler_Glöckner_2012_Study_1_standardized.csv";
     const GAMBLES = CSV.read(GAMBLE_SOURCE_PATH, DataFrame);
     const TARGETS = ["Ap1", "Ap2", "Bp1", "Bp2", "Av1", "Av2", "Bv1", "Bv2"];     # Assuming that array index corresponds to AOI number
     const B_OPTN = hcat(repeat([1 1 0 0 1 1 0 0], 8));
@@ -98,6 +99,6 @@ module transition_matrix_creator
         for i in 1:8
             transitionMatrix[i,:] = get_transition_probabilities(TARGETS[i], gamble, betas);
         end
-        return transitionMatrix;
+        return NamedArray(transitionMatrix, (TARGETS, TARGETS));
     end
 end
