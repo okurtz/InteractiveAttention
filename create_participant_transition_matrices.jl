@@ -1,5 +1,5 @@
 # Creates the transition matrices for each participant, given the participant's beta values, the gambles employed
-# in the respective study. Results will be saved as .jld2.
+# in the respective study. Results will be saved as .jld2 as nxm Matrix, where n is the participant index and m is the gamble index.
 # Script can be run directly. 
 
 using
