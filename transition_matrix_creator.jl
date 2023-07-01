@@ -31,7 +31,7 @@ module transition_matrix_creator
     - A Dictionary containing (target,prob) pairs
     """
     function get_starting_point_probabilities(beta1::Number, beta2::Number, beta3::Number)
-        return Dict(TARGETS .=> [beta1*B_OPTN[i,i] + beta2*B_ATTR[i,i] + beta3*B_BRAN[i,i] for i in 1:8]);
+        return Dict(TARGETS .=> softmax([beta1*B_OPTN[i,i] + beta2*B_ATTR[i,i] + beta3*B_BRAN[i,i] for i in 1:8]));
     end;
 
     function standardize_gamble_values!(gambles::DataFrame)
