@@ -28,10 +28,10 @@ module transition_matrix_creator
     # Arguments
     - beta1-3: beta1 to 3 as specified by He and Bhatia (2023)
     # Returns
-    - A Dictionary containing (target,prob) pairs
+    - An array containing the probabilities. The order corresponds to TARGETS.
     """
     function get_starting_point_probabilities(beta1::Number, beta2::Number, beta3::Number)
-        return Dict(TARGETS .=> softmax([beta1*B_OPTN[i,i] + beta2*B_ATTR[i,i] + beta3*B_BRAN[i,i] for i in 1:8]));
+        return softmax([beta1*B_OPTN[i,i] + beta2*B_ATTR[i,i] + beta3*B_BRAN[i,i] for i in 1:8]);
     end;
 
     function standardize_gamble_values!(gambles::DataFrame)
