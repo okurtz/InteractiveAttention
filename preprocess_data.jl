@@ -25,6 +25,9 @@ rowsWithMissingAOI = rawData[ismissing.(rawData.AOI), :];
     size(rowsWithMissingAOI, 1), size(unique(rowsWithMissingAOI[:, :trigger]), 1)));
 rawData = filter(row -> !ismissing(row.AOI), rawData);
 
+# Type conversion for later convenience
+rawData[!,:subject] = Int32.(rawData[!,:subject]);
+
 sort!(rawData, [:subject, :n]);
 @info(@sprintf("Finished preprocessing. The preprocessed data set contains %i observations from %i participants and is sorted by participant and observation no. ascendingly.",
     size(rawData, 1), size(unique(rawData.subject), 1)));
