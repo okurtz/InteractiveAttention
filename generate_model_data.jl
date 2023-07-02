@@ -3,50 +3,43 @@ using
     DataFrames,
     JLD2,
     NamedArrays,
+    OrderedCollections,
     Pipe,
     Printf,
     StatsBase;
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
-include("transition_matrix_creator.jl");
 include("generation_util.jl");
 
 println("Startup completed. Loading data...")
 
-const PREDICTIONS_PER_GAMBLE::Int32 = 1;
-const SOURCE_FILE_NAME::String = "data/Study 2/Fiedler_Glöckner_2012_Exp2_transition_matrices";
-const OUTPUT_FILE_NAME::String = "data/model_forecasts_per_participant.csv";
-const GAMBLES::DataFrame = @pipe CSV.read("data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_preprocessed.csv", DataFrame, types=Dict([(:subject, Int32), (:trigger, Int32)]), silencewarnings=false) |>
+const PREDICTIONS_PER_GAMBLE::Int64 = 1;
+const SOURCE_FILE_NAME::String = "data/Study 1/Fiedler_Glöckner_2012_Exp1_transition_matrices";
+const OUTPUT_FILE_NAME::String = "data/Study 1/model_forecasts_per_participant.csv";
+const GAMBLES::DataFrame = @pipe CSV.read("data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_preprocessed.csv", DataFrame, types=Dict([(:subject, Int64), (:trigger, Int64)]), silencewarnings=false) |>
     _[!, [:subject, :trigger, :AOI]] |> groupby(_, [:subject, :trigger]) |> combine(_, nrow => :numberOfSamples, renamecols=false);
-const SAMPLES::DataFrame = CSV.read("data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_preprocessed.csv", DataFrame);
 const BETAS::DataFrame = CSV.read("data/Study 1/parameters_10_FiedlerGloeckner2012_EXP1.csv", DataFrame);
 
-currentState::String = "";
-currentBetas::Array{Float64} = [];
-samplingPath::Tuple{Int32, Int32, String};
-
+allSamplingPaths::DataFrame = DataFrame(generation_util.newSamplingPath(0));
 @load SOURCE_FILE_NAME*".jld2" transitionMatrices;  # first index: subject, second index: gamble
 
-println(@sprintf("Starting model data computation using %i threads", Threads.nthreads()));
+println(@sprintf("Starting model data computation using %i threads.", Threads.nthreads()));
 
-Threads.@threads for gamble::DataFrameRow{DataFrame, DataFrames.Index} in eachrow(GAMBLES)
-    currentBetas = BETAS[BETAS[!, :subject] .== gamble.subject][1, Not(:subject)];
-    currentMatrix = transitionMatrices
+for gamble::DataFrameRow{DataFrame, DataFrames.Index} in eachrow(GAMBLES)
+    currentBetas::DataFrameRow{DataFrame, DataFrames.SubIndex{DataFrames.Index, Vector{Int64}, Vector{Int64}}} = BETAS[BETAS[!, :subject] .== gamble.subject,:][1, Not(:subject)];
+    currentMatrix::NamedMatrix{Float64, Matrix{Float64}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}} = transitionMatrices[gamble.subject, gamble.trigger];
 
-    for prediction in 1:PREDICTIONS_PER_GAMBLE
-        currentState = sample(transition_matrix_creator.TARGETS, Weights(transition_matrix_creator.get_starting_point_probabilities(currentBetas[1], currentBetas[2], currentBetas[3])), 1);
-        samplingPath = generation_util.newSamplingPath(gamble.numberOfSamples);
-        # currentState in samplingPath einfügen
+    currentSamplingPaths = generation_util.simulate(currentMatrix, currentBetas, gamble, PREDICTIONS_PER_GAMBLE);
+    append!(allSamplingPaths, DataFrame(currentSamplingPaths));
+    # Hier liegen alle Sampling-Pfade des gegenwärtigen Teilnehmers für das gegenwärtige Spiel vor.
 
-        for sample in 2:gamble.numberOfSamples
-            
-            # Dann die Übergangsmatrix des aktuellen Teilnehmers und des aktuellen Gambles number_of_samples-mal verwenden
-            # Ergebnis: Ein simulierter Aufmerksamkeitspfad.
-            
-        end
-        # Ich muss die simulierten Daten irgendwie mitteln. Wie mache ich das?
-    end
+    # Hypothese 3: Durchschnittliche Anzahl der Fixationen pro AOI
+    # Hypothese 5: Anteil letztlich gewählten Option in den ersten zwei Dritteln und im letzten Drittel
+    # Hypothese 6: Anteil der Samples auf ein Wahrscheinlichkeitsattribut im ersten Fünftel und in den übrigen vier Fünfteln
+    # Hypothese 7: Durchschnittliche Anzahl der Fixationsübergänge innerhalb einer Option u. zwischen den Optionen
     println(@sprintf("Simulated %i samples of gamble %i, participant %i.", gamble.numberOfSamples, gamble.trigger, gamble.subject))
 end
+
+CSV.write(OUTPUT_FILE_NAME, allSamplingPaths);
 
 println("Run finished.")
