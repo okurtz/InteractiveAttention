@@ -15,9 +15,9 @@ include("transition_matrix_creator.jl");
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
 
-const OBSERVATIONS_FILE_NAME = "data/Study 2/Observations_Fiedler_Glöckner_2012_study_2_preprocessed.csv";
-const PARAMETER_FILE_NAME = "data/Study 2/parameters_10_FiedlerGloeckner2012_EXP2.csv";
-const OUTPUT_FILE_NAME = "data/Study 2/Fiedler_Glöckner_2012_Exp2_transition_matrices";
+const OBSERVATIONS_FILE_NAME = "data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_preprocessed.csv";
+const PARAMETER_FILE_NAME = "data/Study 1/parameters_10_FiedlerGloeckner2012_EXP1.csv";
+const OUTPUT_FILE_NAME = "data/Study 1/Fiedler_Glöckner_2012_Exp1_transition_matrices";
 
 const BETAS = CSV.read(PARAMETER_FILE_NAME, DataFrame);
 const GAMBLES = transition_matrix_creator.get_gambles();
@@ -26,7 +26,7 @@ const OBSERVATIONS = CSV.read(OBSERVATIONS_FILE_NAME, DataFrame);
 const numberOfSubjects = maximum(OBSERVATIONS.subject);
 const numberOfGambles = maximum(OBSERVATIONS.trigger);
 const subjectsWithObservationData = unique(OBSERVATIONS.subject);
-const transitionMatrices = Matrix{Union{Matrix{Float64}, Missing}}(missing, numberOfSubjects, numberOfGambles);
+const transitionMatrices = Matrix{Union{NamedArray{Float64}, Missing}}(missing, numberOfSubjects, numberOfGambles);
 currentBetas::DataFrameRow = BETAS[1, Not(:subject)];
 
 for subject in 1:numberOfSubjects
