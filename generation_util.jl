@@ -34,11 +34,11 @@ module generation_util
 
         for i in 0:iterations-1
             currentState = StatsBase.sample(transition_matrix_creator.TARGETS, Weights(transition_matrix_creator.get_starting_point_probabilities(betas[1], betas[2], betas[3])), 1)[1];
-            generation_util.insert(samplingPaths, gamble.subject, gamble.trigger, i, 1 + i * gamble.numberOfSamples, currentState);
+            generation_util.insert(samplingPaths, gamble.subject, gamble.trigger, i+1, 1 + i * gamble.numberOfSamples, currentState);
     
             for sample in 2:gamble.numberOfSamples
                 currentState = StatsBase.sample(transition_matrix_creator.TARGETS, Weights(vec(transitionMatrix[currentState,:])), 1)[1];
-                generation_util.insert(samplingPaths, gamble.subject, gamble.trigger, i, sample + i * gamble.numberOfSamples, currentState);
+                generation_util.insert(samplingPaths, gamble.subject, gamble.trigger, i+1, sample + i * gamble.numberOfSamples, currentState);
             end
         end
 

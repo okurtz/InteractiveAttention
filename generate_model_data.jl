@@ -25,19 +25,21 @@ allSamplingPaths::DataFrame = DataFrame(generation_util.newSamplingPath(0));
 
 println(@sprintf("Starting model data computation using %i threads.", Threads.nthreads()));
 
-for gamble::DataFrameRow{DataFrame, DataFrames.Index} in eachrow(GAMBLES)
+Threads.@threads for gamble::DataFrameRow{DataFrame, DataFrames.Index} in eachrow(GAMBLES)
     currentBetas::DataFrameRow{DataFrame, DataFrames.SubIndex{DataFrames.Index, Vector{Int64}, Vector{Int64}}} = BETAS[BETAS[!, :subject] .== gamble.subject,:][1, Not(:subject)];
     currentMatrix::NamedMatrix{Float64, Matrix{Float64}, Tuple{OrderedDict{String, Int64}, OrderedDict{String, Int64}}} = transitionMatrices[gamble.subject, gamble.trigger];
 
     currentSamplingPaths = generation_util.simulate(currentMatrix, currentBetas, gamble, PREDICTIONS_PER_GAMBLE);
-    append!(allSamplingPaths, DataFrame(currentSamplingPaths));
+    lock(allSamplingPaths) do
+        append!(allSamplingPaths, DataFrame(currentSamplingPaths));
+    unlock(allSamplingPaths);
     # Hier liegen alle Sampling-Pfade des gegenwärtigen Teilnehmers für das gegenwärtige Spiel vor.
 
     # Hypothese 3: Durchschnittliche Anzahl der Fixationen pro AOI
     # Hypothese 5: Anteil letztlich gewählten Option in den ersten zwei Dritteln und im letzten Drittel
     # Hypothese 6: Anteil der Samples auf ein Wahrscheinlichkeitsattribut im ersten Fünftel und in den übrigen vier Fünfteln
     # Hypothese 7: Durchschnittliche Anzahl der Fixationsübergänge innerhalb einer Option u. zwischen den Optionen
-    println(@sprintf("Simulated %i samples of gamble %i, participant %i.", gamble.numberOfSamples, gamble.trigger, gamble.subject))
+    println(@sprintf("Simulated %i samples in %i iterations of gamble %i, participant %i.", gamble.numberOfSamples, PREDICTIONS_PER_GAMBLE, gamble.trigger, gamble.subject))
 end
 
 CSV.write(OUTPUT_FILE_NAME, allSamplingPaths);
