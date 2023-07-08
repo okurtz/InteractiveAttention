@@ -5,7 +5,7 @@ using
     Printf,
     RData;
 
-SOURCE_FILE_NAME = "Fiedler + Glöckner Daten/Eyelot2.dta";
+SOURCE_FILE_NAME = "Fiedler + Glöckner Daten/Eyelot1.dta";
 OUTPUT_FILE_NAME = "Skripte/data/Study 2/Observations_Fiedler_Glöckner_2012_study_2_preprocessed.csv";
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit");
@@ -27,6 +27,7 @@ rawData = filter(row -> !ismissing(row.AOI), rawData);
 
 # Type conversion for later convenience
 rawData[!,:subject] = Int32.(rawData[!,:subject]);
+rawData[!,:trigger] = Int32.(rawData[!,:trigger]);
 
 sort!(rawData, [:subject, :n]);
 @info(@sprintf("Finished preprocessing. The preprocessed data set contains %i observations from %i participants and is sorted by participant and observation no. ascendingly.",

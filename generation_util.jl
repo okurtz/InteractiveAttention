@@ -62,4 +62,12 @@ module generation_util
                 Bv1 = (haskey(numAOIs, "Bv1") ? numAOIs["Bv1"] : 0) / numTotalSamples,
                 Bv2 = (haskey(numAOIs, "Bv2") ? numAOIs["Bv2"] : 0) / numTotalSamples);
     end
+
+    """ Hypothesis 5: In the last third of a sampling process, there's a bias towards the ultimately chosen option (gaze-cascade effect).
+    # Arguments
+    # Returns
+    """
+    calculateHypothesis5 = function()
+        # Option bestimmen, für die sich der Teilnehmer entschieden hat
+    end
 end
