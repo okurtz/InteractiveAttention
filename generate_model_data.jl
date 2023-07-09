@@ -16,7 +16,7 @@ const PREDICTIONS_PER_GAMBLE::Int64 = 1;
 const MISSING_GAMBLES::Int64 = 4;   # Gambles 4, 35 and 45 of subject 4, gamble 27 of subject 17.
 const SOURCE_FILE_NAME::String = "data/Study 1/Fiedler_Glöckner_2012_Exp1_transition_matrices";
 const HYPOTHESIS_3_OUTPUT_FILE_NAME::String = "data/Study 1/hypothesis_3_aggregated_data.csv";
-const GAMBLES::DataFrame = CSV.read("data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_preprocessed.csv", DataFrame);
+const GAMBLES::DataFrame = CSV.read("data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_aggregated.csv", DataFrame, types=Dict([(:optionChosen, Char)]));
 const BETAS::DataFrame = CSV.read("data/Study 1/parameters_10_FiedlerGloeckner2012_EXP1.csv", DataFrame);
 const NUM_SUBJECTS = length(unique(GAMBLES.subject));
 const NUM_GAMBLES = length(unique(GAMBLES.trigger));
@@ -35,7 +35,7 @@ Threads.@threads for gamble::DataFrameRow{DataFrame, DataFrames.Index} in eachro
     currentHypothesis3Data::NamedTuple{(:subject, :gamble, :Av1, :Av2, :Bv1, :Bv2), Tuple{Int64, Int64, Float64, Float64, Float64, Float64}} = generation_util.calculateHypothesis3(currentSamplingPaths);
 
     # Threads.lock(l)
-        map(x -> (global hypothesis3Data[x][rownumber(gamble)] = currentHypothesis3Data[x]), keys(currentHypothesis3Data));
+    map(x -> (global hypothesis3Data[x][rownumber(gamble)] = currentHypothesis3Data[x]), keys(currentHypothesis3Data));
     # Threads.unlock(l)
     # Hier liegen alle Sampling-Pfade des gegenwärtigen Teilnehmers für das gegenwärtige Spiel vor.
 
