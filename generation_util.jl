@@ -11,6 +11,11 @@ module generation_util
 
     include("transition_matrix_creator.jl");
     const LOGGING_OUTPUT_PATH::String = "simulation.log";
+    rm(LOGGING_OUTPUT_PATH, force = true);
+    loggingLock::ReentrantLock = Threads.ReentrantLock();
+    logger::FormatLogger = FormatLogger(LOGGING_OUTPUT_PATH, append = true) do io, args
+        println(io, args.message);
+    end
 
     newSamplingPath = function(initialSize::Int64)
         return (Array{Int64}(undef, initialSize),   # subject
@@ -30,8 +35,14 @@ module generation_util
     end
 
     newHypothesis5Data = function(initialSize::Int64)
-        keys = vcat([:subject, :gamble, :optionChosen], [Symbol(string(i)*"%") for i in 10:10:100]);
-        values = [Array{Int64}(undef, initialSize), Array{Int64}(undef, initialSize), Array{Char}(undef, initialSize), [Array{Union{Float64, Missing}}(undef, initialSize) for i in 1:10]...];
+        keys = vcat([:subject, :gamble, :optionChosen], [Symbol(string(i)*"%") for i::Int64 in 10:10:100]);
+        values = [Array{Int64}(undef, initialSize), Array{Int64}(undef, initialSize), Array{Char}(undef, initialSize), [Array{Union{Float64, Missing}}(undef, initialSize) for i::Int64 in 1:10]...];
+        return (namedtuple(keys, values));
+    end
+
+    newHypothesis6Data = function(initialSize::Int64)
+        keys = vcat([:subject, :gamble, :optionChosen], [Symbol(string(i)*"%") for i::Int64 in 20:20:100]);
+        values = [Array{Int64}(undef, initialSize), Array{Int64}(undef, initialSize), Array{Char}(undef, initialSize), [Array{Union{Float64, Missing}}(undef, initialSize) for i::Int64 in 1:5]...];
         return (namedtuple(keys, values));
     end
 
@@ -43,7 +54,7 @@ module generation_util
         samplingPaths::Tuple{Array{Int64}, Array{Int64}, Array{Int64}, Array{Int64}, Array{String}} = generation_util.newSamplingPath(gamble.numberOfSamples * iterations);
         currentState::String = "";
 
-        for i in 0:iterations-1
+        for i::Int64 in 0:iterations-1
             currentState = StatsBase.sample(transition_matrix_creator.TARGETS, Weights(transition_matrix_creator.get_starting_point_probabilities(betas[1], betas[2], betas[3])), 1)[1];
             foreach(x -> samplingPaths[x][1+i*gamble.numberOfSamples] = (gamble.subject, gamble.trigger, i+1, 1+i*gamble.numberOfSamples, currentState)[x], 1:5);
 
@@ -87,13 +98,9 @@ module generation_util
             return sum(map(target -> numAOIs[target], intersect(optionChosenTargets, OrderedCollections.keys(numAOIs)))) / length(pathSegment);
         end
 
-        logger::FormatLogger = FormatLogger(open(LOGGING_OUTPUT_PATH, "w")) do io, args
-            println(io, args.message);
-        end
-
         samplingPathNumbers::Array{Int64} = unique(samplingPaths[:, :path]);
         samplingPathLength::Int64 = size(samplingPaths)[1] / size(samplingPathNumbers)[1];
-        percentages::Array{Symbol} = [Symbol(string(i)*"%") for i in 10:10:100];
+        percentages::Array{Symbol} = [Symbol(string(i)*"%") for i::Int64 in 10:10:100];
         averageTargetSamplingRatio::DataFrame = DataFrame(
             subject = Array{Int64}([samplingPaths[1, :subject]]),
             gamble = Array{Int64}([samplingPaths[1, :gamble]]),
@@ -102,9 +109,11 @@ module generation_util
         foreach(column -> (averageTargetSamplingRatio[:, column] = Array{Union{Float64, Missing}}(missing, 1)), percentages);
 
         if(samplingPathLength < 3)
-            with_logger(logger) do 
-                @info @sprintf("Subject %i showed less than three samples in gamble %i and will be excluded from testing hypothesis 5.", samplingPaths[1,:subject], samplingPaths[1, :gamble]);
-            end
+            lock(loggingLock)
+                with_logger(logger) do 
+                    @info @sprintf("Subject %i showed less than three samples in gamble %i and will be excluded from testing hypothesis 5.", samplingPaths[1,:subject], samplingPaths[1, :gamble]);
+                end
+            unlock(loggingLock)
             return averageTargetSamplingRatio[1, :];
         end
         
@@ -117,7 +126,7 @@ module generation_util
 
         for samplingPathNumber::Int64 in samplingPathNumbers
             currentSamplingPath = samplingPaths[samplingPaths[!, :path] .=== samplingPathNumber, :][!, :AOI];
-            pathSegments = [currentSamplingPath[round(Int64, i*avgSegmentSize)+1:(i === numOfSegments-1 ? end : round(Int64, ((i+1)*avgSegmentSize)))] for i in 0:numOfSegments-1];
+            pathSegments = [currentSamplingPath[round(Int64, i*avgSegmentSize)+1:(i === numOfSegments-1 ? end : round(Int64, ((i+1)*avgSegmentSize)))] for i::Int64 in 0:numOfSegments-1];
             optionChosenTargets = optionChosen === 'A' ? ["Ap1", "Ap2", "Av1", "Av2"] :
                                   optionChosen === 'B' ? ["Bp1", "Bp2", "Bv1", "Bv2"] :
                                   error(@sprintf("Expected 'A' or 'B' for option chosen, got '%s' instead.", optionChosen));
@@ -133,5 +142,18 @@ module generation_util
             averageTargetSamplingRatio[1, percentages[i]] = ismissing(targetSamplingRatio[1, i]) ? missing : mean(targetSamplingRatio[:, i]);
         end
         return averageTargetSamplingRatio[1, :];
+    end
+
+    """ Hypothesis 6: In the first 20% of a sampling process, participants preferrably sample probability targets and increasing outcome targets afterwards.
+    # Arguments
+    - samplingPaths: A DataFrame of one or more sampling sequences of a single participant in a single gamble
+    """
+    calculateHypothesis6 = function(samplingPaths::DataFrame)
+        calculateProbabilityTargetRatio = function(pathSegment::Array{String})
+            probabilityTargets = ["Ap1", "Ap2", "Bp1", "Bp2"];
+            numAOIs::Dict{String, Int64} = countmap(pathSegment);
+            return sum(map(target -> numAOIs[target], intersect(probabilityTargets, OrderedCollections.keys(numAOIs)))) / length(pathSegment);
+        end
+
     end
 end
