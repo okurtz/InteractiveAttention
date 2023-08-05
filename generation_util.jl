@@ -87,7 +87,7 @@ module generation_util
                 Av1 = (haskey(numAOIs, "Av1") ? numAOIs["Av1"] : 0) / numTotalSamples,
                 Av2 = (haskey(numAOIs, "Av2") ? numAOIs["Av2"] : 0) / numTotalSamples,
                 Bv1 = (haskey(numAOIs, "Bv1") ? numAOIs["Bv1"] : 0) / numTotalSamples,
-                Bv2 = (haskey(numAOIs, "Bv2") ? numAOIs["Bv2"] : 0) / numTotalSamples)[1, :];
+                Bv2 = (haskey(numAOIs, "Bv2") ? numAOIs["Bv2"] : 0) / numTotalSamples, copycols = false)[1, :];
     end
 
     """ Hypothesis 5: In the last third of a sampling process, there's a bias towards the ultimately chosen option (gaze-cascade effect).
@@ -110,7 +110,8 @@ module generation_util
         averageTargetSamplingRatio::DataFrame = DataFrame(
             subject = Array{Int64}([samplingPaths[1, :subject]]),
             gamble = Array{Int64}([samplingPaths[1, :gamble]]),
-            optionChosen = Array{Char}([optionChosen])
+            optionChosen = Array{Char}([optionChosen]),
+            copycols = false
         );
         foreach(column -> (averageTargetSamplingRatio[:, column] = Array{Union{Float64, Missing}}(missing, 1)), percentages);
 
@@ -168,7 +169,8 @@ module generation_util
         percentages::Array{Symbol} = [Symbol(string(i)*"%") for i::Int64 in 20:20:100];
         averageProbabilitySamplingRatio::DataFrame = DataFrame(
             subject = Array{Int64}([samplingPaths[1, :subject]]),
-            gamble = Array{Int64}([samplingPaths[1, :gamble]])
+            gamble = Array{Int64}([samplingPaths[1, :gamble]]),
+            copycols = false
         );
         foreach(column -> (averageProbabilitySamplingRatio[:, column] = Array{Union{Float64, Missing}}(missing, 1)), percentages);
 
@@ -236,7 +238,8 @@ module generation_util
         return DataFrame(
             subject = samplingPaths[:, :subject],
             gamble = samplingPaths[:, :gamble],
-            fixWithinLottery = mean(fixationTransitionRatios)
+            fixWithinLottery = mean(fixationTransitionRatios),
+            copycols = false
         )[1, :];
     end
 end
