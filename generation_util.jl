@@ -242,4 +242,39 @@ module generation_util
             copycols = false
         )[1, :];
     end
+
+    """ Same as calculateHypothesis7, but multiple sequential fixations of the same target are eliminated before calculation
+    # Arguments
+    - samplingPaths: A DataFrame of one or more sampling sequences of a single participant in a single gamble
+    # Returns
+    - A DataFrame containing the fixation transitions within a lottery for each participant and each gamble
+    """
+    calculateHypothesis7_noDuplicateFixations = function(samplingPaths::DataFrame)
+        currentAOI::String = "";
+        currentPath::Int64 = 1;
+        is_next_AOI_duplicate = function(nextAOI::String, nextPath::Int64)
+            if(currentAOI === "")           # first element in DataFrame encountered
+                currentAOI = nextAOI;
+                return false;
+            end
+            if(currentPath !== nextPath)    # never duplicate upon new path
+                currentPath = nextPath;
+                currentAOI = nextAOI;
+                return false;
+            end
+            if(currentAOI === nextAOI)
+                # must be duplicate in same path
+                return true;
+            else
+                # must be in same path
+                currentAOI = nextAOI;
+                return false;
+            end
+        end
+        aois = samplingPaths[!, :AOI];
+        paths = samplingPaths[!, :path];
+
+        deleteat!(samplingPaths, [is_next_AOI_duplicate(aois[i], paths[i]) for i in eachindex(aois, paths)]);
+        return calculateHypothesis7(samplingPaths);
+    end
 end
