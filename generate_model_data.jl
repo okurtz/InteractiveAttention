@@ -5,8 +5,7 @@ using
     JLD2,
     NamedArrays,
     OrderedCollections,
-    Printf,
-    StatsBase;
+    Printf;
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
 include("generation_util.jl");
