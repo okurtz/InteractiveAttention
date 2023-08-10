@@ -218,6 +218,10 @@ module generation_util
             currentLottery::Char = samplingPath[1][1];
             followingLottery::Char = ' ';
 
+            if(length(samplingPath) === 1)
+                return 0;
+            end
+
             for i::Int64 in eachindex(samplingPath)
                 if(i === length(samplingPath))
                     return transitionsWithin / (length(samplingPath)-1);
