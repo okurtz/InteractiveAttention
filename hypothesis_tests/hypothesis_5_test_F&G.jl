@@ -6,7 +6,7 @@ using
     StatsBase;
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
-include("generation_util.jl");
+include("../generation_util.jl");
 const INPUT_FILE_NAME::String = "data/Study 1/Observations_Fiedler_Glöckner_2012_study_1_preprocessed.csv";
 const AOI_DICT = Dict(
     1.0 => "Ap1", 

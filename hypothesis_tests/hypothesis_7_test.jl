@@ -8,7 +8,7 @@ using
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
 include("../EffectSizes/src/EffectSizes.jl");
 
-data = @pipe CSV.read("data/Study 1/hypothesis_7_aggregated_data.csv", DataFrame) |>
+data = @pipe CSV.read("data/Study 2/hypothesis_7_aggregated_data.csv", DataFrame) |>
     _[!, Not(:gamble)] |>
     groupby(_, :subject) |>
     combine(_, :fixWithinLottery => mean, renamecols=false) |>
