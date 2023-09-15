@@ -26,7 +26,7 @@ groupB = @pipe data[data[!, :optionChosen] .== "B", :] |>
         Symbol("90%") => meanskipmissing, Symbol("100%") => meanskipmissing, renamecols=false);
 groupA = map(row -> mean(skipmissing(Array(row[2:11]))), eachrow(groupA));
 groupB = map(row -> mean(skipmissing(Array(row[2:11]))), eachrow(groupB));
-t_test = OneSampleTTest(mean(groupB), std(groupB), length(groupB), mean(groupA));
+t_test = OneSampleTTest(groupA, 0.5);   # Oder groupB, 0.5
 pvalue(t_test, tail = :left)
 confint(t_test)
 d = EffectSizes.CohenD(groupA, groupB)

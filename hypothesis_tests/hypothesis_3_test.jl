@@ -11,7 +11,7 @@ using
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
 include("mixed_model_util.jl");
 
-const STUDY = 2;
+const STUDY = 1;
 mixed_model_util.init(STUDY);
 const OUTCOME_TARGETS = [:Av1_z, :Av2_z, :Bv1_z, :Bv2_z];
 const OUTPUT_FILE_NAME = @sprintf("model_fit_hyp_3_study_%i", STUDY);
@@ -28,7 +28,6 @@ mixedModelInputData = mixed_model_util.new_mixed_model_input_data(@pipe OUTCOME_
 for target in OUTCOME_TARGETS
     mixedModelInputDataFragment = mixed_model_util.generate_mixed_model_input_data(target, fixationRatios);
     mixed_model_util.append_mixed_model_data(mixedModelInputDataFragment, mixedModelInputData);
-    mixed_model_util.mixedModelInputDataAppendIndex += length(mixedModelInputDataFragment[1]);
 end
 df = DataFrame(mixedModelInputData);
 df.subject = categorical(df.subject);
