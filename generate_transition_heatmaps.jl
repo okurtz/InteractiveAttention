@@ -17,14 +17,17 @@ const GAMBLE_NUMBERS = @pipe CSV.read("Gambles_Fiedler_Glöckner_2012_Study_1_st
 const PARTICIPANT_NUMBERS = @pipe CSV.read("parameters_10_FiedlerGloeckner2012_EXP1.csv", DataFrame) |> _[:, :subject];
 @load INPUT_FILE_NAME*".jld2" transitionMatrices;
 
+
 for participantIndex in eachindex(PARTICIPANT_NUMBERS), gambleIndex in eachindex(GAMBLE_NUMBERS)
     fig = plot(heatmap(
         x=transition_matrix_creator.TARGETS,
         y=transition_matrix_creator.TARGETS,
         z=transitionMatrices[participantIndex, gambleIndex]),
         Layout(
-            title=@sprintf("Study 1, participant %i, gamble %i", PARTICIPANT_NUMBERS[participantIndex], GAMBLE_NUMBERS[gambleIndex]),
-            xaxis_side="top"
+            # title=@sprintf("Study 1, participant %i, gamble %i", PARTICIPANT_NUMBERS[participantIndex], GAMBLE_NUMBERS[gambleIndex]),
+            font = attr(
+                size = 26
+            )
         )
     );
     savefig(fig, @sprintf("%s/participant %i, gamble %i.png", OUTPUT_DIR, PARTICIPANT_NUMBERS[participantIndex], GAMBLE_NUMBERS[gambleIndex]));
