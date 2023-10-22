@@ -10,8 +10,8 @@ cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte"
 
 x = range(0.1, 1, step=0.1);
 
-study1Data = @pipe CSV.read("data/Study 1/hypothesis_5_aggregated_data.csv", DataFrame) |> filter(row -> !(all(ismissing, row[4:13])), _);
-study2Data = @pipe CSV.read("data/Study 2/hypothesis_5_aggregated_data.csv", DataFrame) |> filter(row -> !(all(ismissing, row[4:13])), _);
+study1Data = @pipe CSV.read("data/Study 1/hypothesis_2_aggregated_data.csv", DataFrame) |> filter(row -> !(all(ismissing, row[4:13])), _);
+study2Data = @pipe CSV.read("data/Study 2/hypothesis_2_aggregated_data.csv", DataFrame) |> filter(row -> !(all(ismissing, row[4:13])), _);
 study1DecisionLeftData = map(col -> mean(skipmissing(col)), eachcol(study1Data[study1Data[!, :optionChosen] .== "A", :][!, 4:13]));
 study1DecisionRightData = map(col -> mean(skipmissing(col)), eachcol(study1Data[study1Data[!, :optionChosen] .== "B", :][!, 4:13]));
 study2DecisionLeftData = map(col -> mean(skipmissing(col)), eachcol(study2Data[study2Data[!, :optionChosen] .== "A", :][!, 4:13]));

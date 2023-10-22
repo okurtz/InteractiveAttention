@@ -6,8 +6,8 @@ using
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
 
-study1Data = @pipe CSV.read("data/Study 1/hypothesis_7_no_duplicate_fixations.csv", DataFrame, select=[:fixWithinLottery]);
-study2Data = @pipe CSV.read("data/Study 2/hypothesis_7_no_duplicate_fixations.csv", DataFrame, select=[:fixWithinLottery]);
+study1Data = @pipe CSV.read("data/Study 1/hypothesis_4_no_duplicate_fixations.csv", DataFrame, select=[:fixWithinLottery]);
+study2Data = @pipe CSV.read("data/Study 2/hypothesis_4_no_duplicate_fixations.csv", DataFrame, select=[:fixWithinLottery]);
 study1Data.study .= "Studie 1";
 study2Data.study .= "Studie 2";
 plotData = append!(study1Data, study2Data)
@@ -56,4 +56,4 @@ boxplot = plot(
         )
     )
 );
-savefig(boxplot, "../Bachelorarbeit/Grafiken/plot_hypothesis_7_no_duplicate_fixations.png");
+savefig(boxplot, "../Bachelorarbeit/Grafiken/plot_hypothesis_4_no_duplicate_fixations.png");

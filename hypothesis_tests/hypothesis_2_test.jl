@@ -12,7 +12,7 @@ meanskipmissing = function(v)
     return mean(skipmissing(v));
 end
 
-data = @pipe CSV.read("data/Study 1/hypothesis_5_aggregated_data.csv", DataFrame) |>
+data = @pipe CSV.read("data/Study 1/hypothesis_2_aggregated_data.csv", DataFrame) |>
     filter(row -> !(all(ismissing, row[4:13])), _) |>
     _[!, Not(:optionChosen)];
 groupA = @pipe data[:, Not(10:12)] |>

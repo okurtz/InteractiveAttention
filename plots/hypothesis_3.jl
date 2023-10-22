@@ -8,11 +8,11 @@ using
 
 cd("C:\\Users\\Oliver\\Documents\\Studium\\Psychologie\\Bachelorarbeit\\Skripte");
 
-study1Data = @pipe CSV.read("data/Study 1/hypothesis_6_aggregated_data.csv", DataFrame) |>
+study1Data = @pipe CSV.read("data/Study 1/hypothesis_3_aggregated_data.csv", DataFrame) |>
     _[!, 3:7] |>
     filter(row -> !(all(ismissing, row[1:5])), _) |>
     map(col -> mean(col), eachcol(_));
-study2Data = @pipe CSV.read("data/Study 2/hypothesis_6_aggregated_data.csv", DataFrame) |>
+study2Data = @pipe CSV.read("data/Study 2/hypothesis_3_aggregated_data.csv", DataFrame) |>
     _[!, 3:7] |>
     filter(row -> !(all(ismissing, row[1:5])), _) |>
     map(col -> mean(col), eachcol(_));

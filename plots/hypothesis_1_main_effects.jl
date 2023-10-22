@@ -14,7 +14,7 @@ const STUDY = 1;
 mixed_model_util.init(STUDY);
 const OUTCOME_TARGETS = [:Av1_z, :Av2_z, :Bv1_z, :Bv2_z];
 const OUTPUT_FILE_NAME = @sprintf("hypothesis_1_main_effects_study_%i.png", STUDY);
-const fixationRatios = CSV.read(@sprintf("data/Study %i/hypothesis_3_aggregated_data.csv", STUDY), DataFrame);
+const fixationRatios = CSV.read(@sprintf("data/Study %i/hypothesis_1_aggregated_data.csv", STUDY), DataFrame);
 
 mixedModelInputData::NamedTuple = NamedTuple();
 mixedModelInputDataFragment::NamedTuple = NamedTuple();

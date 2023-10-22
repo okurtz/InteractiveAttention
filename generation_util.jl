@@ -25,7 +25,7 @@ module generation_util
                 Array{String}(undef, initialSize)); # AOI
     end
 
-    newHypothesis3Data = function(initialSize::Int64)
+    newHypothesis1Data = function(initialSize::Int64)
         return (subject = Array{Int64}(undef, initialSize),
                 gamble = Array{Int64}(undef, initialSize),
                 Av1 = Array{Float64}(undef, initialSize),
@@ -34,19 +34,19 @@ module generation_util
                 Bv2 = Array{Float64}(undef, initialSize));
     end
 
-    newHypothesis5Data = function(initialSize::Int64)
+    newHypothesis2Data = function(initialSize::Int64)
         keys = vcat([:subject, :gamble, :optionChosen], [Symbol(string(i)*"%") for i::Int64 in 10:10:100]);
         values = [Array{Int64}(undef, initialSize), Array{Int64}(undef, initialSize), Array{Char}(undef, initialSize), [Array{Union{Float64, Missing}}(undef, initialSize) for i::Int64 in 1:10]...];
         return (namedtuple(keys, values));
     end
 
-    newHypothesis6Data = function(initialSize::Int64)
+    newHypothesis3Data = function(initialSize::Int64)
         keys = vcat([:subject, :gamble], [Symbol(string(i)*"%") for i::Int64 in 20:20:100]);
         values = [Array{Int64}(undef, initialSize), Array{Int64}(undef, initialSize), [Array{Union{Float64, Missing}}(undef, initialSize) for i::Int64 in 1:5]...];
         return (namedtuple(keys, values));
     end
 
-    newHypothesis7Data = function(initialSize::Int64)
+    newHypothesis4Data = function(initialSize::Int64)
         return (subject = Array{Int64}(undef, initialSize),
                 gamble = Array{Int64}(undef, initialSize),
                 fixWithinLottery = Array{Float64}(undef, initialSize));
@@ -72,13 +72,13 @@ module generation_util
         return DataFrame(subject = samplingPaths[1], gamble = samplingPaths[2], path = samplingPaths[3], sample = samplingPaths[4], AOI = samplingPaths[5], copycols=false);
     end
 
-    """ Hypothesis 3: The amount of fixations spent on an outcome increases with both is probability and the value of the outcome.
+    """ Hypothesis 1: The amount of fixations spent on an outcome increases with both is probability and the value of the outcome.
     # Arguments
     - samplingPaths: A DataFrame of sampling sequences of a single participant in a single gamble
     # Returns
     - A NamedTuple containing the average percentage of fixations on an outcome across all sampling sequences
     """
-    calculateHypothesis3 = function(samplingPaths::DataFrame)
+    calculateHypothesis1 = function(samplingPaths::DataFrame)
         numAOIs::Dict{String, Int64} = countmap(samplingPaths[:, :AOI]);
         numTotalSamples::Int64 = size(samplingPaths)[1];
 
@@ -90,14 +90,14 @@ module generation_util
                 Bv2 = (haskey(numAOIs, "Bv2") ? numAOIs["Bv2"] : 0) / numTotalSamples, copycols = false)[1, :];
     end
 
-    """ Hypothesis 5: In the last third of a sampling process, there's a bias towards the ultimately chosen option (gaze-cascade effect).
+    """ Hypothesis 2: In the last third of a sampling process, there's a bias towards the ultimately chosen option (gaze-cascade effect).
     # Arguments
     - samplingPaths: A DataFrame of one or more sampling sequences of a single participant in a single gamble
     - optionChosen: The option the participant has ultimately chosen, either 'A' or 'B'
     # Returns
     - A DataFrameRow containing the percentage of fixations of the ultimately chosen option in ten-percent steps of the total sampling duration
     """
-    calculateHypothesis5 = function(samplingPaths::DataFrame, optionChosen::Char)
+    calculateHypothesis2 = function(samplingPaths::DataFrame, optionChosen::Char)
 
         calculateTargetOptionRatio = function(pathSegment::Array{String}, optionChosenTargets::Array{String})
             numAOIs::Dict{String, Int64} = countmap(pathSegment);
@@ -118,7 +118,7 @@ module generation_util
         if(samplingPathLength < 3)
             lock(loggingLock)
                 with_logger(logger) do 
-                    @info @sprintf("Subject %i showed less than three samples in gamble %i and will be excluded from testing hypothesis 5.", samplingPaths[1,:subject], samplingPaths[1, :gamble]);
+                    @info @sprintf("Subject %i showed less than three samples in gamble %i and will be excluded from testing hypothesis 2S.", samplingPaths[1,:subject], samplingPaths[1, :gamble]);
                 end
             unlock(loggingLock)
             return averageTargetSamplingRatio[1, :];
@@ -151,13 +151,13 @@ module generation_util
         return averageTargetSamplingRatio[1, :];
     end
 
-    """ Hypothesis 6: In the first 20% of a sampling process, participants preferrably sample probability targets and increasing outcome targets afterwards.
+    """ Hypothesis 3: In the first 20% of a sampling process, participants preferrably sample probability targets and increasing outcome targets afterwards.
     # Arguments
     - samplingPaths: A DataFrame of one or more sampling sequences of a single participant in a single gamble
     # Returns
     - A DataFrameRow containing the percentage of fixations of probability targets in twenty-percent steps of the total sampling duration
     """
-    calculateHypothesis6 = function(samplingPaths::DataFrame)
+    calculateHypothesis3 = function(samplingPaths::DataFrame)
         calculateProbabilitySamplingRatio = function(pathSegment::Array{String})
             probabilityTargets = ["Ap1", "Ap2", "Bp1", "Bp2"];
             numAOIs::Dict{String, Int64} = countmap(pathSegment);
@@ -177,7 +177,7 @@ module generation_util
         if(samplingPathLength < 5)
             lock(loggingLock)
                 with_logger(logger) do 
-                    @info @sprintf("Subject %i showed less than five samples in gamble %i and will be excluded from testing hypothesis 6.", samplingPaths[1,:subject], samplingPaths[1, :gamble]);
+                    @info @sprintf("Subject %i showed less than five samples in gamble %i and will be excluded from testing hypothesis 3.", samplingPaths[1,:subject], samplingPaths[1, :gamble]);
                 end
             unlock(loggingLock)
             return averageProbabilitySamplingRatio[1, :];
@@ -206,13 +206,13 @@ module generation_util
         return averageProbabilitySamplingRatio[1, :];
     end
 
-    """ Hypothesis 7: More fixation transitions occur between lotteries than within lotteries.
+    """ Hypothesis 4: More fixation transitions occur between lotteries than within lotteries.
     # Arguments
     - samplingPaths: A DataFrame of one or more sampling sequences of a single participant in a single gamble
     # Returns
     - A DataFrame containing the fixation transitions within a lottery for each participant and each gamble
     """
-    calculateHypothesis7 = function(samplingPaths::DataFrame)
+    calculateHypothesis4 = function(samplingPaths::DataFrame)
         calculateFixationTransitionRatioWithinLottery = function(samplingPath::Array{String})
             transitionsWithin::Int64 = 0;
             currentLottery::Char = samplingPath[1][1];
@@ -247,13 +247,13 @@ module generation_util
         )[1, :];
     end
 
-    """ Same as calculateHypothesis7, but multiple sequential fixations of the same target are eliminated before calculation
+    """ Same as calculateHypothesis4, but multiple sequential fixations of the same target are eliminated before calculation
     # Arguments
     - samplingPaths: A DataFrame of one or more sampling sequences of a single participant in a single gamble
     # Returns
     - A DataFrame containing the fixation transitions within a lottery for each participant and each gamble
     """
-    calculateHypothesis7_noDuplicateFixations = function(samplingPaths::DataFrame)
+    calculateHypothesis4_noDuplicateFixations = function(samplingPaths::DataFrame)
         currentAOI::String = "";
         currentPath::Int64 = 1;
         is_next_AOI_duplicate = function(nextAOI::String, nextPath::Int64)
@@ -279,6 +279,6 @@ module generation_util
         paths = samplingPaths[!, :path];
 
         deleteat!(samplingPaths, [is_next_AOI_duplicate(aois[i], paths[i]) for i in eachindex(aois, paths)]);
-        return calculateHypothesis7(samplingPaths);
+        return calculateHypothesis4(samplingPaths);
     end
 end
